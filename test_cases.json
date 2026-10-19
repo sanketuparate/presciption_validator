@@ -1,0 +1,195 @@
+{
+  "description": "Comprehensive Test Cases for Prescription Input Validator",
+  "version": "1.0.0",
+  "testCases": [
+    {
+      "id": "TC-01",
+      "name": "Standard Valid Prescription",
+      "description": "Valid prescription inputs for both eyes with standard negative diopters and astigmatism.",
+      "inputs": {
+        "od": { "sph": "-2.25", "cyl": "-0.75", "axis": "90" },
+        "os": { "sph": "+1.50", "cyl": "-1.00", "axis": "105" }
+      },
+      "expected": {
+        "isValid": true,
+        "errorCount": 0,
+        "parsedData": {
+          "od": { "sph": -2.25, "cyl": -0.75, "axis": 90 },
+          "os": { "sph": 1.50, "cyl": -1.00, "axis": 105 }
+        }
+      }
+    },
+    {
+      "id": "TC-02",
+      "name": "User Prescription (Valid Individual Fields)",
+      "description": "The exact values the user provided: SPH +1.50, CYL -1.00, Axis 105 placed in their respective inputs.",
+      "inputs": {
+        "od": { "sph": "+1.50", "cyl": "-1.00", "axis": "105" },
+        "os": { "sph": "+1.50", "cyl": "-1.00", "axis": "105" }
+      },
+      "expected": {
+        "isValid": true,
+        "errorCount": 0,
+        "parsedData": {
+          "od": { "sph": 1.50, "cyl": -1.00, "axis": 105 },
+          "os": { "sph": 1.50, "cyl": -1.00, "axis": 105 }
+        }
+      }
+    },
+    {
+      "id": "TC-03",
+      "name": "User Pasted Raw Text Into SPH (Empty CYL/Axis)",
+      "description": "Reproducing what happens when the entire line 'SPH +1.50, CYL -1.00, Axis 105' is typed into SPH while CYL and Axis are left blank.",
+      "inputs": {
+        "od": { "sph": "SPH +1.50, CYL -1.00, Axis 105", "cyl": "", "axis": "" },
+        "os": { "sph": "SPH +1.50, CYL -1.00, Axis 105", "cyl": "", "axis": "" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 6,
+        "expectedErrors": {
+          "od.sph": "Right Eye (OD) SPH must be a valid number",
+          "od.cyl": "Right Eye (OD) CYL is required. Please enter a value.",
+          "od.axis": "Right Eye (OD) Axis is required. Please enter a value.",
+          "os.sph": "Left Eye (OS) SPH must be a valid number",
+          "os.cyl": "Left Eye (OS) CYL is required. Please enter a value.",
+          "os.axis": "Left Eye (OS) Axis is required. Please enter a value."
+        }
+      }
+    },
+    {
+      "id": "TC-04",
+      "name": "Boundary Limits (Min -20/-8/0 and Max +20/+8/180)",
+      "description": "Boundary values testing minimum allowable numbers (-20.00 SPH, -8.00 CYL, 0 Axis) and maximum (+20.00 SPH, +8.00 CYL, 180 Axis). Axis 0 must be accepted and NOT treated as missing.",
+      "inputs": {
+        "od": { "sph": "-20.00", "cyl": "-8.00", "axis": "0" },
+        "os": { "sph": "+20.00", "cyl": "+8.00", "axis": "180" }
+      },
+      "expected": {
+        "isValid": true,
+        "errorCount": 0,
+        "parsedData": {
+          "od": { "sph": -20.0, "cyl": -8.0, "axis": 0 },
+          "os": { "sph": 20.0, "cyl": 8.0, "axis": 180 }
+        }
+      }
+    },
+    {
+      "id": "TC-05",
+      "name": "SPH Below Minimum (-25.00)",
+      "description": "SPH value outside allowable range of -20.00 to +20.00 D.",
+      "inputs": {
+        "od": { "sph": "-25.00", "cyl": "0.00", "axis": "90" },
+        "os": { "sph": "0.00", "cyl": "0.00", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "od.sph": "Right Eye (OD) SPH must be between -20.00 and +20.00 D"
+        }
+      }
+    },
+    {
+      "id": "TC-06",
+      "name": "CYL Above Maximum (+10.00)",
+      "description": "CYL value exceeding the allowable maximum limit of +8.00 D.",
+      "inputs": {
+        "od": { "sph": "0.00", "cyl": "+10.00", "axis": "90" },
+        "os": { "sph": "0.00", "cyl": "0.00", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "od.cyl": "Right Eye (OD) CYL must be between -8.00 and +8.00 D"
+        }
+      }
+    },
+    {
+      "id": "TC-07",
+      "name": "Axis Above Maximum (190)",
+      "description": "Axis orientation exceeding 180 degrees.",
+      "inputs": {
+        "od": { "sph": "0.00", "cyl": "0.00", "axis": "190" },
+        "os": { "sph": "0.00", "cyl": "0.00", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "od.axis": "Right Eye (OD) Axis must be between 0 and 180°"
+        }
+      }
+    },
+    {
+      "id": "TC-08",
+      "name": "Negative Axis (-10)",
+      "description": "Axis orientation below 0 degrees.",
+      "inputs": {
+        "od": { "sph": "0.00", "cyl": "0.00", "axis": "-10" },
+        "os": { "sph": "0.00", "cyl": "0.00", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "od.axis": "Right Eye (OD) Axis must be a non-negative whole number between 0 and 180°"
+        }
+      }
+    },
+    {
+      "id": "TC-09",
+      "name": "Decimal Axis (45.5)",
+      "description": "Axis with decimal value, which must be strictly rejected according to whole numbers only rule.",
+      "inputs": {
+        "od": { "sph": "0.00", "cyl": "0.00", "axis": "45.5" },
+        "os": { "sph": "0.00", "cyl": "0.00", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "od.axis": "Right Eye (OD) Axis must be a whole number (0 to 180°). Decimal values like \"45.5\" are not permitted."
+        }
+      }
+    },
+    {
+      "id": "TC-10",
+      "name": "Empty Form Submission",
+      "description": "All 6 inputs submitted empty. Must reject and show 6 distinct errors without crashing.",
+      "inputs": {
+        "od": { "sph": "", "cyl": "", "axis": "" },
+        "os": { "sph": "", "cyl": "", "axis": "" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 6,
+        "expectedErrors": {
+          "od.sph": "Right Eye (OD) SPH is required. Please enter a value.",
+          "od.cyl": "Right Eye (OD) CYL is required. Please enter a value.",
+          "od.axis": "Right Eye (OD) Axis is required. Please enter a value.",
+          "os.sph": "Left Eye (OS) SPH is required. Please enter a value.",
+          "os.cyl": "Left Eye (OS) CYL is required. Please enter a value.",
+          "os.axis": "Left Eye (OS) Axis is required. Please enter a value."
+        }
+      }
+    },
+    {
+      "id": "TC-11",
+      "name": "Non-Numeric String (abc)",
+      "description": "Non-numeric alphabetical text entered into SPH.",
+      "inputs": {
+        "od": { "sph": "-2.00", "cyl": "-0.50", "axis": "90" },
+        "os": { "sph": "abc", "cyl": "-0.50", "axis": "90" }
+      },
+      "expected": {
+        "isValid": false,
+        "errorCount": 1,
+        "expectedErrors": {
+          "os.sph": "Left Eye (OS) SPH must be a valid number"
+        }
+      }
+    }
+  ]
+}
